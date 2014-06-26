@@ -46,12 +46,10 @@ gulp.task('uglify', function() {
 
 
 gulp.task('copy', function() {
-  return gulp.src('index.html')
+  gulp.src('index.html')
     .pipe(gulp.dest('./dist/'));
- });
 
-gulp.task('copyImg', function() {
-   return gulp.src('./img/doge.jpg')
+   gulp.src('./img/doge.jpg')
     .pipe(gulp.dest('./dist/img'));
 });;
 
@@ -85,7 +83,7 @@ gulp.task('prod', ['test', 'sass', 'uglify', 'copy', 'copyImg', 'replace'], func
 
 gulp.task('build', function() {
   runSequence(
-    ['test', 'sass', 'uglify', 'copy', 'copyImg'],
+    ['test', 'sass', 'uglify', 'copy'],
     'replace',
     'htmlmin'
   );
