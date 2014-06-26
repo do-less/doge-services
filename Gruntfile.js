@@ -10,6 +10,9 @@ module.exports = function(grunt) {
     },
     sass: {
       dist: {
+        options: {                       // Target options
+          style: 'compressed'
+        },
         files: {
           'dist/css/style.css': 'sass/style.sass'
         }
@@ -64,19 +67,23 @@ module.exports = function(grunt) {
         }
       }
     },
-    injector: {
-      options: {
-        ignorePath: 'dist'
-      },
-      dev: {
-        files: {
-          'index.html': ['js/lib/*.js','js/*.js', 'css/*.css'],
-        }
-      },
+    replace: {
       prod: {
-        files: {
-          'dist/index.html': ['dist/js/*.js', 'dist/css/*.css']
-        }
+        options: {
+          patterns: [
+            {
+              match: 'css',
+              replacement: '<%= grunt.file.read("dist/css/style.css") %>'
+            },
+            {
+              match: 'js',
+              replacement: '<%= grunt.file.read("dist/js/app.js") %>'
+            }
+          ]
+        },
+        files: [
+          {expand: true, flatten: true, src: ['dist/index.html'], dest: 'dist/'}
+        ]
       }
     },
     copy: {
@@ -92,6 +99,6 @@ module.exports = function(grunt) {
 
   grunt.registerTask('serve', ['connect']);
   grunt.registerTask('test', ['concurrent:test']);
-  grunt.registerTask('build', ['test', 'sass', 'uglify','copy', 'injector:prod', 'htmlmin:prod']);
+  grunt.registerTask('build', ['test', 'sass', 'uglify','copy', 'replace:prod', 'htmlmin:prod']);
   grunt.registerTask('dev', ['injector:dev', 'htmlmin:dist']);
 };
