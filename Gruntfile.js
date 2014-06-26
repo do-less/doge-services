@@ -11,7 +11,7 @@ module.exports = function(grunt) {
     sass: {
       dist: {
         files: {
-          'css/style.css': 'sass/style.sass'
+          'dist/css/style.css': 'sass/style.sass'
         }
       }
     },
@@ -19,7 +19,8 @@ module.exports = function(grunt) {
      server: {
        options: {
          port: 3000,
-         keepalive: true
+         keepalive: true,
+         base: 'dist'
        }
      }
    },
@@ -36,7 +37,7 @@ module.exports = function(grunt) {
     uglify: {
       build: {
         files: {
-          'dist/app.js': ['js/lib/jquery.min.js', 'js/accordion.js']
+          'dist/js/app.js': ['js/lib/jquery.min.js', 'js/accordion.js']
         }
       }
     },
@@ -46,18 +47,50 @@ module.exports = function(grunt) {
     htmlmin: {                                     // Task
       dist: {                                      // Target
         options: {                                 // Target options
-          removeComments: true,
+          removeComments: false,
           collapseWhitespace: true
         },
         files: {                                   // Dictionary of files
           'indexMin.html': 'index.html',     // 'destination': 'source'
         }
       },
+      prod: {
+        options: {
+          removeComments: true,
+          collapseWhitespace: true
+        },
+        files: {
+          'dist/index.html': 'dist/index.html'
+        }
+      }
+    },
+    injector: {
+      options: {
+        ignorePath: 'dist'
+      },
+      dev: {
+        files: {
+          'index.html': ['js/lib/*.js','js/*.js', 'css/*.css'],
+        }
+      },
+      prod: {
+        files: {
+          'dist/index.html': ['dist/js/*.js', 'dist/css/*.css']
+        }
+      }
+    },
+    copy: {
+      main: {
+        files: [
+          // includes files within path
+          {expand: true, src: 'index.html', dest: 'dist/', filter: 'isFile'},
+        ]
+      }
     }
   });
 
   grunt.registerTask('serve', ['connect']);
   grunt.registerTask('test', ['concurrent:test']);
-  grunt.registerTask('build', ['test', 'sass', 'uglify']);
-  grunt.registerTask('html', ['htmlmin']);
+  grunt.registerTask('build', ['test', 'sass', 'uglify','copy', 'injector:prod', 'htmlmin:prod']);
+  grunt.registerTask('dev', ['injector:dev', 'htmlmin:dist']);
 };
