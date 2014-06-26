@@ -78,6 +78,12 @@ gulp.task('htmlmin', function() {
 });
 
 
+gulp.task('clean', function () {
+  return gulp.src(['dist/js', 'dist/css'], {read: false})
+    .pipe(tasks.clean());
+});
+
+
 
 gulp.task('prod', ['test', 'sass', 'uglify', 'copy', 'copyImg', 'replace'], function() {});
 
@@ -85,6 +91,6 @@ gulp.task('build', function() {
   runSequence(
     ['test', 'sass', 'uglify', 'copy'],
     'replace',
-    'htmlmin'
+    ['htmlmin', 'clean']
   );
 });
