@@ -1,5 +1,8 @@
 var gulp = require('gulp');
 var tasks = require('gulp-load-plugins')();
+var fs = require('fs');
+var runSequence = require('run-sequence');
+
 
 gulp.task('test', ['lint'], function() {
   return gulp.src('./test/index.html').pipe(tasks.qunit());
@@ -7,8 +10,8 @@ gulp.task('test', ['lint'], function() {
 
 gulp.task('sass', function() {
   return gulp.src('sass/style.sass')
-    .pipe(tasks.rubySass())
-    .pipe(gulp.dest('css'))
+    .pipe(tasks.rubySass({style: 'compressed'}))
+    .pipe(gulp.dest('dist/css'))
     .pipe(tasks.livereload({
       auto: false
     }));
@@ -16,7 +19,7 @@ gulp.task('sass', function() {
 
 gulp.task('connect', function() {
   tasks.connect.server({
-    root: '.',
+    root: 'dist',
     port: 3000
   });
 });
@@ -36,9 +39,54 @@ gulp.task('lint', function() {
 
 gulp.task('uglify', function() {
   return gulp.src(['./js/lib/jquery.min.js', './js/*.js'])
-    .pipe(tasks.concat('dist/app.js'))
+    .pipe(tasks.concat('dist/js/app.js'))
     .pipe(tasks.uglify())
     .pipe(gulp.dest(''));
 });
 
-gulp.task('build', ['test', 'sass', 'uglify'], function() {});
+
+gulp.task('copy', function() {
+  return gulp.src('index.html')
+    .pipe(gulp.dest('./dist/'));
+ });
+
+gulp.task('copyImg', function() {
+   return gulp.src('./img/doge.jpg')
+    .pipe(gulp.dest('./dist/img'));
+});;
+
+gulp.task('replace', function () {
+  return gulp.src('dist/index.html')
+  .pipe(tasks.replaceTask({
+    patterns: [
+      {
+        match: 'css',
+        replacement: fs.readFileSync('./dist/css/style.css', 'utf8')
+      },
+      {
+        match: 'js',
+        replacement: fs.readFileSync('./dist/js/app.js', 'utf8')
+      }
+    ]
+  }))
+  .pipe(gulp.dest('dist'));
+});
+
+
+gulp.task('htmlmin', function() {
+  return gulp.src('./dist/index.html')
+  .pipe(tasks.htmlmin({collapseWhitespace: true, removeComments: true}))
+  .pipe(gulp.dest('./dist/'))
+});
+
+
+
+gulp.task('prod', ['test', 'sass', 'uglify', 'copy', 'copyImg', 'replace'], function() {});
+
+gulp.task('build', function() {
+  runSequence(
+    ['test', 'sass', 'uglify', 'copy', 'copyImg'],
+    'replace',
+    'htmlmin'
+  );
+});
