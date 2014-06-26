@@ -42,11 +42,22 @@ module.exports = function(grunt) {
     },
     concurrent: {
       test: ['jshint', 'qunit']
+    },
+    htmlmin: {                                     // Task
+      dist: {                                      // Target
+        options: {                                 // Target options
+          removeComments: true,
+          collapseWhitespace: true
+        },
+        files: {                                   // Dictionary of files
+          'indexMin.html': 'index.html',     // 'destination': 'source'
+        }
+      },
     }
   });
 
   grunt.registerTask('serve', ['connect']);
   grunt.registerTask('test', ['concurrent:test']);
   grunt.registerTask('build', ['test', 'sass', 'uglify']);
-
+  grunt.registerTask('html', ['htmlmin']);
 };
